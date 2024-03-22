@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.caffeinemc.mods.sodium.client.gl.attribute.GlVertexFormat;
 import net.caffeinemc.mods.sodium.client.gl.device.CommandList;
 import net.caffeinemc.mods.sodium.client.gl.device.RenderDevice;
+import net.caffeinemc.mods.sodium.client.render.chunk.terrain.DefaultTerrainRenderPasses;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkMeshAttribute;
 import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
@@ -41,6 +42,36 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         return program;
     }
 
+    protected GlProgram<ChunkShaderInterface> compileTransProgram(ChunkShaderOptions options) {
+        GlProgram<ChunkShaderInterface> program = this.programs.get(options);
+
+        if (program == null) {
+            this.programs.put(options, program = this.createShader("blocks/block_layer_translucent", options));
+        }
+
+        return program;
+    }
+
+    protected GlProgram<ChunkShaderInterface> compileCutProgram(ChunkShaderOptions options) {
+        GlProgram<ChunkShaderInterface> program = this.programs.get(options);
+
+        if (program == null) {
+            this.programs.put(options, program = this.createShader("blocks/block_layer_cutout", options));
+        }
+
+        return program;
+    }
+
+    protected GlProgram<ChunkShaderInterface> compileCutMipProgram(ChunkShaderOptions options) {
+        GlProgram<ChunkShaderInterface> program = this.programs.get(options);
+
+        if (program == null) {
+            this.programs.put(options, program = this.createShader("blocks/block_layer_cutout_mipped", options));
+        }
+
+        return program;
+    }
+
     private GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options) {
         ShaderConstants constants = options.constants();
 
@@ -71,7 +102,16 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
 
         ChunkShaderOptions options = new ChunkShaderOptions(ChunkFogMode.SMOOTH, pass, this.vertexType);
 
-        this.activeProgram = this.compileProgram(options);
+        if (pass.equals(DefaultTerrainRenderPasses.SOLID)) {
+            this.activeProgram = this.compileProgram(options);
+        } else if (pass.equals(DefaultTerrainRenderPasses.TRANSLUCENT)) {
+            this.activeProgram = this.compileTransProgram(options);
+        } else if (pass.equals(DefaultTerrainRenderPasses.CUTOUT)) {
+            this.activeProgram = this.compileCutProgram(options);
+        } else if (pass.equals(DefaultTerrainRenderPasses.CUTOUT_MIPPED)) {
+            this.activeProgram = this.compileCutMipProgram(options);
+        }
+
         this.activeProgram.bind();
         this.activeProgram.getInterface()
                 .setupState();

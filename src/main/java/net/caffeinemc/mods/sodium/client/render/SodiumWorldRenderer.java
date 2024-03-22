@@ -244,9 +244,12 @@ public class SodiumWorldRenderer {
 
         if (renderLayer == RenderType.solid()) {
             this.renderSectionManager.renderLayer(matrices, DefaultTerrainRenderPasses.SOLID, x, y, z);
-            this.renderSectionManager.renderLayer(matrices, DefaultTerrainRenderPasses.CUTOUT, x, y, z);
         } else if (renderLayer == RenderType.translucent()) {
             this.renderSectionManager.renderLayer(matrices, DefaultTerrainRenderPasses.TRANSLUCENT, x, y, z);
+        } else if (renderLayer == RenderType.cutout()) {
+            this.renderSectionManager.renderLayer(matrices, DefaultTerrainRenderPasses.CUTOUT, x, y, z);
+        } else if (renderLayer == RenderType.cutoutMipped()) {
+            this.renderSectionManager.renderLayer(matrices, DefaultTerrainRenderPasses.CUTOUT_MIPPED, x, y, z);
         }
     }
 
